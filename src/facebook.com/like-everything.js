@@ -114,6 +114,10 @@
         const endIndex = nodeList.length - 1
         return [processedCount, endIndex]
     }
+    const confirmed = confirm(`Enable ${id}?`)
+    if (!confirmed) {
+        return
+    }
     let count = 0
     let currentIndex = 0
     let processedTotal = 0
