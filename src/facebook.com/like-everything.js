@@ -34,15 +34,16 @@
         max = Math.floor(max);
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
-    async function smoothScroll(total, oneTime = 30) {
-        const times = Math.floor(total / oneTime)
-        const left = total % oneTime
+    async function smoothScroll(total, humanDelay = 100, oneTimeHeight = 30) {
+        const times = Math.floor(total / oneTimeHeight)
+        const left = total % oneTimeHeight
+        const range = [Math.ceil(humanDelay*0.5), Math.ceil(humanDelay*1.5)]
         for(let i = 0; i < times; i++) {
             window.scrollBy({
-                top: oneTime,
+                top: oneTimeHeight,
                 behavior: "smooth",
             })
-            await delay(getRandomInt(50, 150))
+            await delay(getRandomInt(...range))
         }
         if (left) {
             window.scrollBy({
@@ -83,19 +84,21 @@
             default: return
         }
         log(`nodeList.length: ${nodeList.length}`)
-        for (let i = startIndex; i<nodeList.length; i++) {
+        let processedCount = 0
+        for (let i = startIndex; i < nodeList.length; i++) {
             let el = nodeList[i]
             if (!el.querySelector) {
-                await smoothScroll(window.screen.height)
+                await smoothScroll(window.screen.height, 10)
                 // it's html comment, do nothing
                 continue
             }
             let list = el.querySelectorAll(':scope div[aria-label="Like"]')
             if (list.length === 0) {
                 log('no like element detect, do nothing')
-                await smoothScroll(window.screen.height)
+                await smoothScroll(window.screen.height, 10)
                 continue
             }
+            // start processing post section
             for (let ii = 0; ii < list.length; ii++) {
                 let likeEl = list[ii]
                 if (likeEl.clientWidth > 100) {
@@ -105,19 +108,22 @@
                     log(`like element detected, it's comment element (width = ${likeEl.clientWidth}), do nothing`)
                 }
             }
+            processedCount++
             await smoothScroll(window.screen.height)
-            //el.remove()
         }
-        return nodeList.length - 1 // end index
+        const endIndex = nodeList.length - 1
+        return [processedCount, endIndex]
     }
     let count = 0
     let currentIndex = 0
+    let processedTotal = 0
     while(true) {
         //removeParentLayer('body div[role="main"] div[aria-label="Create a post"]', 3)
         //removeParentLayer('body div[role="main"] a[href="/stories/create/"]', 10)
         try {
             log(`loop: ${count}`)
-            const processedEndIndex = await main(currentIndex)
+            const [processedCount, processedEndIndex] = await main(currentIndex)
+            processedTotal += processedCount
             if (getMode() === '/') {
                 currentIndex = processedEndIndex
             }
