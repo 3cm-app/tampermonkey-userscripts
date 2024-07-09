@@ -1,13 +1,15 @@
 // ==UserScript==
 // @name         Facebook like everything
-// @namespace    https://github.com/3cm-app/tampermonkey-user-scripts
+// @namespace    https://github.com/3cm-app/tampermonkey-userscripts
 // @version      2024-07-08
-// @description  Auto click every like button!
+// @description  Auto click like buttons!
 // @author       https://github.com/up9cloud
 // @match https://*.facebook.com/*
 // @match https://www.facebook.com/*
 // @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
 // @grant        none
+// @updateURL https://raw.githubusercontent.com/3cm-app/tampermonkey-userscripts/master/src/facebook.com/like-everything.js
+// @downloadURL https://raw.githubusercontent.com/3cm-app/tampermonkey-userscripts/master/src/facebook.com/like-everything.js
 // ==/UserScript==
 
 (async function() {
