@@ -17,6 +17,7 @@
     'use strict';
     const id = 'like everything'
     const start = performance.now()
+    const humanDelayDefault = 100 // ms
     function currentDuration() {
         return (performance.now() - start).toFixed(3)
     }
@@ -34,16 +35,21 @@
         max = Math.floor(max);
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
-    async function smoothScroll(total, humanDelay = 100, oneTimeHeight = 30) {
+    function ranged(randomInt, p = 0.5) {
+        return [Math.ceil(randomInt*p), Math.ceil(randomInt*(2 - p))]
+    }
+    async function randomDelay(ms, p = 0.5) {
+        return delay(getRandomInt(...ranged(ms, p)))
+    }
+    async function smoothScroll(total, humanDelay = humanDelayDefault, oneTimeHeight = 30) {
         const times = Math.floor(total / oneTimeHeight)
         const left = total % oneTimeHeight
-        const range = [Math.ceil(humanDelay*0.5), Math.ceil(humanDelay*1.5)]
         for(let i = 0; i < times; i++) {
             window.scrollBy({
                 top: oneTimeHeight,
                 behavior: "smooth",
             })
-            await delay(getRandomInt(...range))
+            await randomDelay(humanDelay)
         }
         if (left) {
             window.scrollBy({
@@ -84,7 +90,8 @@
             default: return
         }
         log(`nodeList.length: ${nodeList.length}`)
-        let processedCount = 0
+        let processedLikePostCount = 0
+        let processedLikeCommentCount = 0
         for (let i = startIndex; i < nodeList.length; i++) {
             let el = nodeList[i]
             if (!el.querySelector) {
@@ -103,16 +110,18 @@
                 let likeEl = list[ii]
                 if (likeEl.clientWidth > 100) {
                     likeEl.click()
-                    log('click like')
+                    processedLikePostCount++
+                    log('like post clicked')
                 } else {
+                    processedLikeCommentCount++
+                    //log(`like comment clicked`)
                     log(`like element detected, it's comment element (width = ${likeEl.clientWidth}), do nothing`)
                 }
             }
-            processedCount++
             await smoothScroll(window.screen.height)
         }
         const endIndex = nodeList.length - 1
-        return [processedCount, endIndex]
+        return [processedLikePostCount, processedLikeCommentCount, endIndex]
     }
     if (window.top === window.self) {
     //--- Script is on domain_B.com when/if it is the MAIN PAGE.
@@ -126,20 +135,24 @@
     }
     let count = 0
     let currentIndex = 0
-    let processedTotal = 0
+    let processedPostTotal = 0
     while(true) {
         //removeParentLayer('body div[role="main"] div[aria-label="Create a post"]', 3)
         //removeParentLayer('body div[role="main"] a[href="/stories/create/"]', 10)
         try {
             log(`loop: ${count}`)
-            const [processedCount, processedEndIndex] = await main(currentIndex)
-            processedTotal += processedCount
+            const [processedLikePostCount, processedLikeCommentCount, processedEndIndex] = await main(currentIndex)
+            processedPostTotal += processedLikePostCount
             if (getMode() === '/') {
                 currentIndex = processedEndIndex
             }
+            if (processedLikePostCount > 0) {
+                await humanDelayDefault(10000, 0.25)
+            }
         } catch(e) {
             error(e)
+        } finally {
+            await randomDelay(humanDelayDefault)
         }
-        await delay(getRandomInt(5000, 30000))
     }
 })();
