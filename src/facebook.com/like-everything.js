@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Facebook like everything
 // @namespace    https://github.com/3cm-app/tampermonkey-userscripts
-// @version      2024-07-08
+// @version      2024-07-23
 // @description  Auto click every like button!
 // @author       https://github.com/up9cloud
 // @match https://*.facebook.com/*
@@ -114,8 +114,14 @@
         const endIndex = nodeList.length - 1
         return [processedCount, endIndex]
     }
-    const confirmed = confirm(`Enable ${id}?`)
-    if (!confirmed) {
+    if (window.top === window.self) {
+    //--- Script is on domain_B.com when/if it is the MAIN PAGE.
+        const confirmed = confirm(`Enable ${id}?`)
+        if (!confirmed) {
+            return
+        }
+    } else {
+        //--- Script is on domain_B.com when/if it is IN AN IFRAME.
         return
     }
     let count = 0
